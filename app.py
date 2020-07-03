@@ -26,7 +26,7 @@ def hello():
 def test():
     return "test"
 
-@app.route('/callback', methods=['GET','POST'])
+@app.route('/callback', methods=['POST'])
 def callback():
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
@@ -44,12 +44,10 @@ def callback():
     return 'OK'
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    msg = event.message.text
-    print("msg :", msg)
+    print("event.reply_token:", event.reply_token)
+    print("event.message.text:", event.message.text)
     #msg = msg.encode('utf-8')
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text))    
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=80,debug=True)
