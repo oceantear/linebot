@@ -1,4 +1,5 @@
 from flask import Flask, request, abort
+import requests
 
 from bs4 import BeautifulSoup
 
