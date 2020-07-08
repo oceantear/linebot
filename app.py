@@ -60,8 +60,8 @@ def oil_price():
     gas_price = soup.select('#gas-price')[0].text.replace('\n\n\n', '').replace(' ', '')
     cpc = soup.select('#cpc')[0].text.replace(' ', '')
     content = '{}\n{}{}'.format(title, gas_price, cpc)
-    #print("title :", title)
-    #print("gas_price :", gas_price)
+    print("title :", title)
+    print("gas_price :", gas_price)
     #print("oil_price:")
     #print(content)
     return content
@@ -118,7 +118,7 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
         return 0
-    event
+    elif
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
 
 if __name__ == '__main__':
