@@ -118,8 +118,9 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
         return 0
-    else
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
+    else:
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
+        return 0    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=80,debug=True)
