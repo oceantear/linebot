@@ -46,6 +46,25 @@ def callback():
 
     return 'OK'
 
+def oil_price():
+    target_url = 'https://gas.goodlife.tw/'
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    res.encoding = 'utf-8'
+    #print(res.text)
+    #print(res.content)
+    print(res.encoding)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    #soup.encoding = 'utf-8'
+    title = soup.select('#main')[0].text.replace('\n', '').split('(')[0]
+    gas_price = soup.select('#gas-price')[0].text.replace('\n\n\n', '').replace(' ', '')
+    cpc = soup.select('#cpc')[0].text.replace(' ', '')
+    content = '{}\n{}{}'.format(title, gas_price, cpc)
+    #print("title :", title)
+    #print("gas_price :", gas_price)
+    #print("oil_price:")
+    #print(content)
+    return content
 
 def ptt_beauty():
     rs = requests.session()
@@ -93,9 +112,14 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
         return 0
-
-
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
+    elif event.message.text == "油價":
+        content = oil_price()
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=content))
+        return 0
+    event
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=80,debug=True)
