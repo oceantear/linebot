@@ -154,7 +154,7 @@ def handle_message(event):
             TextSendMessage(text=content))
         return 0
     elif "股價" in event.message.text:
-        stockID[] = event.message.text.split("股價")
+        stockID = event.message.text.split("股價")
 
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
