@@ -66,6 +66,41 @@ def oil_price():
     #print(content)
     return content
 
+def stock_price():
+    try:
+        content = get_stock_price(stockID)
+        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
+        print('content :')
+        print(content)
+        line_bot_api.push_message(to, TextSendMessage(text=content))
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
+
+def get_stock_price(id):
+    target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw'
+
+    rs = requests.session()
+    res = rs.get(target_url, verify=False)
+    msgArray = json.loads(res.text)
+    data = msgArray['msgArray'][0]
+    print('data :')
+    print(data)
+    print(data['c'])
+    meta = { '股票代號': data['c'],
+                '公司簡稱':data['n'],
+                '當盤成交價':data['z'],
+                '當盤成交量':data['tv'],
+                '累積成交量':data['v'],
+                '開盤價':data['o'],
+                '最高價':data['h'],
+                '最低價':data['l'],
+                '昨收價':data['y'],
+        }
+    
+    return meta 
+
+
 def ptt_beauty():
     rs = requests.session()
     res = rs.get('https://www.ptt.cc/bbs/Beauty/index.html', verify=False)
@@ -118,6 +153,9 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
         return 0
+    elif "股價" in event.message.text:
+        stockID[] = event.message.text.split("股價")
+
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
         return 0    
