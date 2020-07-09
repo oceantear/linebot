@@ -161,7 +161,9 @@ def handle_message(event):
         content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
         print('content :')
         print(content)
-        line_bot_api.push_message(to, TextSendMessage(text=content))
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=content))
 
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
