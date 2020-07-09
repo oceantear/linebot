@@ -155,6 +155,11 @@ def handle_message(event):
         return 0
     elif "股價" in event.message.text:
         stockID = event.message.text.split("股價")
+        content = get_stock_price(stockID)
+        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
+        print('content :')
+        print(content)
+        line_bot_api.push_message(to, TextSendMessage(text=content))
 
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
