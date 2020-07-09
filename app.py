@@ -155,6 +155,7 @@ def handle_message(event):
         return 0
     elif "股價" in event.message.text:
         stockID = event.message.text.split("股價")
+        print('stockID :'+stockID[0])
         content = get_stock_price(stockID[0])
         content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
         print('content :')
