@@ -209,7 +209,7 @@ def handle_message(event):
         msg = gen_Carousel_template_msg(content)
         line_bot_api.reply_message(
             event.reply_token,
-            TemplateSendMessage(alt_text='Carousel template',
+            TemplateSendMessage(alt_text='ptt 表特',
             template=CarouselTemplate(
                 columns= msg
             )))
