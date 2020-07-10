@@ -14,7 +14,8 @@ from linebot.exceptions import (
 
 from linebot.models import (
     TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
-    CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage)
+    CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage, LocationSendMessage, StickerSendMessage,
+    AudioSendMessage)
 
 app=Flask(__name__)
 #Channel access token
@@ -197,6 +198,29 @@ def gen_Carousel_template_msg(info):
                     ))
     return msg                   
 
+def location_msg(event):
+    location_message = LocationSendMessage(
+        title='我的位置',
+        address='資拓宏宇',
+        latitude=25.0144456,
+        longitude=121.4610858
+    )
+    
+    line_bot_api.reply_message(event.reply_token, location_message)
+
+def audio_msg(event):
+    audio_message = AudioSendMessage(
+        original_content_url='https://example.com/original.m4a',
+        duration=240000
+    )
+    line_bot_api.reply_message(event.reply_token, audio_message)
+
+def stick_msg(event):
+    sticker_message = StickerSendMessage(
+        package_id='1',
+        sticker_id='1'
+    )
+    line_bot_api.reply_message(event.reply_token, sticker_message)
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -232,10 +256,20 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
     elif "教學" in event.message.text or "help" in event.message.text:
-        content = '{}\n{}\n{}\n'.format('表特 指令: 表特/beauty','油價 指令: 油價', '股價 : 指令 股價2330')
+        content = '{}\n{}\n{}\n'.format('表特 指令: 表特/beauty','油價 指令: 油價', '股價 指令:  2330股價')
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=content))
+    elif "Demo" in event.message.text:
+        input = event.message.text.split("Demo")
+        command = input[1]
+        print('command :', command)
+        if "address" in command:
+            location_msg(event)
+        elif "audio" in command:
+            audio_msg(event)
+        elif "stick" in command:
+            stick_msg(event)              
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
         return 0    

@@ -2,7 +2,7 @@ from linebot import LineBotApi
 
 from linebot.models import (
     TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
-    CarouselTemplate, CarouselColumn)
+    CarouselTemplate, CarouselColumn, LocationSendMessage, AudioSendMessage, StickerSendMessage)
 from linebot.exceptions import LineBotApiError
 
 import requests
@@ -149,6 +149,43 @@ def Carousel_template_msg():
         # error handle
         raise e
 
+def location_msg():
+    location_message = LocationSendMessage(
+        title='我的位置',
+        address='資拓宏宇',
+        latitude=25.0144456,
+        longitude=121.4610858
+    )
+    try:
+        line_bot_api.push_message(to, location_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e
+
+def audio_msg():
+    
+    audio_message = AudioSendMessage(
+        original_content_url='https://drive.google.com/file/d/1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih/view?usp=sharing',
+        duration=204000
+    )
+    try:
+        line_bot_api.push_message(to, audio_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e
+
+def stick_msg():
+
+    sticker_message = StickerSendMessage(
+        package_id='1',
+        sticker_id='1'
+    )
+
+    try:
+        line_bot_api.push_message(to, sticker_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e
 
 if __name__ == '__main__':
-    Carousel_template_msg()
+    stick_msg()
