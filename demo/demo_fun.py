@@ -64,4 +64,10 @@ class Demo(object):
             package_id='1',
             sticker_id='1'
         )
-        self.line_bot_api.reply_message(self.event.reply_token, sticker_message)         
+        self.line_bot_api.reply_message(self.event.reply_token, sticker_message)
+
+    def text_msg(self):
+        text_message = TextSendMessage(text='Hello, world')
+        self.line_bot_api.reply_message(
+            self.event.reply_token,
+            text_message)             

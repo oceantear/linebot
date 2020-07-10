@@ -255,7 +255,9 @@ def handle_message(event):
             #video_msg(event)
             demo.video_msg()
         elif "image" in command:
-            demo.img_msg()                      
+            demo.img_msg()
+        elif "text" in command:
+            demo.text_msg()                          
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
         return 0    
