@@ -246,16 +246,16 @@ def handle_message(event):
         command = input[1]
         print('command :', command)
         if "address" in command:
-            location_msg(event)
+            demo.location_msg(event)
         elif "audio" in command:
-            audio_msg(event)
+            demo.audio_msg(event)
         elif "stick" in command:
-            stick_msg(event)
+            demo.stick_msg(event)
         elif "video" in command:
             #video_msg(event)
-            video_msg()
+            demo.video_msg()
         elif "image" in command:
-            img_msg(event)                      
+            demo.img_msg(event)                      
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
         return 0    
