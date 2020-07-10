@@ -241,7 +241,7 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
     elif "demo" in event.message.text.lower():
-        #demo = Demo()
+        demo = Demo()
         input = event.message.text.lower().split("demo")
         command = input[1]
         print('command :', command)
