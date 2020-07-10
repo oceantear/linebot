@@ -8,6 +8,8 @@ from linebot.exceptions import LineBotApiError
 import requests
 from bs4 import BeautifulSoup
 
+from demo.demo_fun import Demo
+
 CHANNEL_ACCESS_TOKEN = "xwYcIrRNGmj7SKJGpl2DSe+GdJ6JEFQXdoBTaVGLkNGPVdTrSTBKeDDxH3CJzK2eTfgIHHq60evtHvhWF1ldXa2h5SKXyMQKEiSVnpDQuxhzC9lwPTqYaSV88lMmGqxolbQrKgOTBMqLO2yjfM71cQdB04t89/1O/w1cDnyilFU="
 to = "U2fce467c4cae2847a7d19d631a387782"
 
@@ -187,7 +189,7 @@ def stick_msg():
         # error handle
         raise e
 
-def video_msg():
+'''def video_msg():
     video_message = VideoSendMessage(
         original_content_url='https://drive.google.com/uc?export=download&id=11OZi2D2fafF3cLVojMVdYUT-Ug2fYPLx',
         preview_image_url='https://drive.google.com/uc?export=download&id=1wsz3U2Aqk4oR83UsvA-EH9J5ffcShsvA'
@@ -197,7 +199,8 @@ def video_msg():
         line_bot_api.push_message(to, video_message)
     except LineBotApiError as e:
         # error handle
-        raise e     
+        raise e    ''' 
 
 if __name__ == '__main__':
-    video_msg()
+    demo = Demo()
+    demo.video_msg()

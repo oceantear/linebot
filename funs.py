@@ -14,16 +14,18 @@ from linebot.exceptions import (
 
 from linebot.models import (
     TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
-    CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage, LocationSendMessage, StickerSendMessage,
-    AudioSendMessage, VideoSendMessage)
+    CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage)
+from linebot.exceptions import LineBotApiError
 
-from demo.demo_fun import Demo
+from geopy.geocoders import Nominatim
 
 app=Flask(__name__)
 #Channel access token
 line_bot_api = LineBotApi('xwYcIrRNGmj7SKJGpl2DSe+GdJ6JEFQXdoBTaVGLkNGPVdTrSTBKeDDxH3CJzK2eTfgIHHq60evtHvhWF1ldXa2h5SKXyMQKEiSVnpDQuxhzC9lwPTqYaSV88lMmGqxolbQrKgOTBMqLO2yjfM71cQdB04t89/1O/w1cDnyilFU=')
 #channel secret
 handler = WebhookHandler('c07bdeb9cdabc6c14307c208d5dd7ba0')
+
+to = "U2fce467c4cae2847a7d19d631a387782"
 
 @app.route('/')
 def hello():
@@ -33,7 +35,7 @@ def hello():
 def test():
     return "test"
 
-@app.route('/callback', methods=['POST'])
+@app.route('/callback', methods=['POST','GET'])
 def callback():
     # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
@@ -50,7 +52,58 @@ def callback():
 
     return 'OK'
 
+
+@app.route('/ppt_test', methods=['POST','GET'])
+def ptt_test():
+    print("ppt_test")
+    try:
+        content = ptt_beauty()
+        #print("content :"+content)
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
+    
+@app.route('/oil_price', methods=['POST','GET'])
 def oil_price():
+    print("oil_price")
+    try:
+        content = get_oil_price()
+        print("content :"+content)
+        line_bot_api.push_message(to, TextSendMessage(text=content))
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
+
+@app.route('/stock_price', methods=['POST','GET'])
+def stock_price():
+    #stockID = request.args.get("stockID")
+    stockID = request.get_json().get('stockID', '')
+    print(stockID)
+    #print(data)
+    #print(data.get('stockID', ''))
+    text = "1102股價"
+    id = text.split("股價")
+    print("id:")
+    print(id[0])
+
+    try:
+        content = get_stock_price(stockID)
+        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
+        print('content :')
+        print(content)
+        line_bot_api.push_message(to, TextSendMessage(text=content))
+    except InvalidSignatureError:
+        abort(400)
+    return 'OK'
+
+@app.route('/address', methods=['POST','GET'])
+def address_to_location():
+    geolocator = Nominatim()
+    location = geolocator.geocode("台北火車站")
+    print(location.address)
+    return 'OK'
+
+def get_oil_price():
     target_url = 'https://gas.goodlife.tw/'
     rs = requests.session()
     res = rs.get(target_url, verify=False)
@@ -64,25 +117,19 @@ def oil_price():
     gas_price = soup.select('#gas-price')[0].text.replace('\n\n\n', '').replace(' ', '')
     cpc = soup.select('#cpc')[0].text.replace(' ', '')
     content = '{}\n{}{}'.format(title, gas_price, cpc)
-    print("title :", title)
+    print("oil title :", title)
     print("gas_price :", gas_price)
-    #print("oil_price:")
-    #print(content)
+    print("oil_price:")
+    print(content)
     return content
-
-'''def stock_price():
-    try:
-        content = get_stock_price(stockID)
-        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
-        print('content :')
-        print(content)
-        line_bot_api.push_message(to, TextSendMessage(text=content))
-    except InvalidSignatureError:
-        abort(400)
-    return 'OK'
-'''    
+    #try:
+    #    line_bot_api.push_message(to, TextSendMessage(text=content))
+    #except LineBotApiError as e:
+        # error handle
+    #    raise e
 
 def get_stock_price(id):
+    #https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_1102.tw
     target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw'
 
     rs = requests.session()
@@ -103,7 +150,26 @@ def get_stock_price(id):
                 '昨收價':data['y'],
         }
     
-    return meta 
+    return meta    
+
+def get_page_number(content):
+    start_index = content.find('index')
+    end_index = content.find('.html')
+    page_number = content[start_index + 5: end_index]
+    return int(page_number) + 1
+
+
+def parse_article_entries(doc):
+    html = HTML(html=doc)
+    post_entries = html.find('div.rent')
+
+def parse_article_meta(res):
+
+    soup = BeautifulSoup(res.text, 'html.parser')
+
+    return {
+        'title': soup.find('div.title', first=True)
+    }
 
 
 def ptt_beauty():
@@ -164,7 +230,9 @@ def ptt_beauty():
 
     print("final meta : ")
     print(info) 
-    return info               
+    send_Carousel_template_msg(info)               
+                
+    return "200"
 
 def image_url(link):
         # 不抓相簿 和 .gif
@@ -178,9 +246,70 @@ def image_url(link):
         # 有些網址會沒有檔案格式， "https://imgur.com/xxx"
         if 'imgur' in link:
             return ['{}.jpg'.format(link)]
-        return None                 
+        return None    
 
-def gen_Carousel_template_msg(info):
+def ptt_beauty2():
+    print("ptt_beauty")
+    rs = requests.session()
+    res = rs.get('https://www.ptt.cc/bbs/Beauty/index.html', verify=False, cookies={'over18':'1'})
+    #print(res.text)
+    soup = BeautifulSoup(res.text, 'html.parser')
+    #all_page_url = soup.select('.btn.wide')[1]['href']
+    #all_page_url = soup.select("div.title")
+    all_page_url = soup.select("div.r-ent")
+    #print("all_page_url :" + str(all_page_url))
+    
+    for entry in all_page_url:
+        #print("entry :")
+        #print(entry)
+        #print(entry.find('a').text)
+        #print(entry.find('a').attrs['href'])
+        #print("meta :")
+        #print(entry.find('div', 'meta'))
+        meta = { 'title': entry.find('a').text,
+                'link':entry.find('a').attrs['href'],
+                'author':entry.find('div', 'meta').find('div','author').text
+                
+        }
+        #meta = parse_article_meta(entry)
+    
+        if meta is not None:
+            print("meta :")
+            print(meta)
+
+    """ start_page = get_page_number(all_page_url)
+    page_term = 2  # crawler count
+    push_rate = 10  # 推文
+    index_list = []
+    article_list = []
+    for page in range(start_page, start_page - page_term, -1):
+        page_url = 'https://www.ptt.cc/bbs/Beauty/index{}.html'.format(page)
+        index_list.append(page_url)
+
+    # 抓取 文章標題 網址 推文數
+    while index_list:
+        index = index_list.pop(0)
+        res = rs.get(index, verify=False)
+        # 如網頁忙線中,則先將網頁加入 index_list 並休息1秒後再連接
+        if res.status_code != 200:
+            index_list.append(index)
+            # print u'error_URL:',index
+            # time.sleep(1)
+        else:
+            article_list = craw_page(res, push_rate)
+            # print u'OK_URL:', index
+            # time.sleep(0.05)
+    content = ''
+    for article in article_list:
+        data = '[{} push] {}\n{}\n\n'.format(article.get('rate', None), article.get('title', None),
+                                             article.get('url', None))
+        content += data
+
+    print("content", +content) 
+    return content """
+    return "200"
+
+def send_Carousel_template_msg(info):
 
     msg = list()
     for data in info:
@@ -199,48 +328,41 @@ def gen_Carousel_template_msg(info):
                             )
                         ]
                     ))
-    return msg
 
-def img_msg(event):
-    image_url = "https://i.guim.co.uk/img/media/22bed68981e92d7a9ff204ed7d7f5776a16468fe/1933_1513_3623_2173/master/3623.jpg?width=605&quality=45&auto=format&fit=max&dpr=2&s=da5b088be9a2aa1527f7509ce6a70c68"    
-    img_message = ImageSendMessage(
-        original_content_url=image_url, 
-        preview_image_url=image_url)
+    '''CarouselColumns.append(CarouselColumn(
+                    thumbnail_image_url='https://example.com/item2.jpg',
+                    title='this is menu2',
+                    text='description2',
+                    actions=[
+                        PostbackAction(
+                            label='postback2',
+                            display_text='postback text2',
+                            data='action=buy&itemid=2'
+                        ),
+                        MessageAction(
+                            label='message2',
+                            text='message text2'
+                        ),
+                        URIAction(
+                            label='uri2',
+                            uri='http://example.com/2'
+                        )
+                    ]
+                ))'''
 
-    line_bot_api.reply_message(event.reply_token, img_message)    
-                       
 
-def location_msg(event):
-    location_message = LocationSendMessage(
-        title='我的位置',
-        address='資拓宏宇',
-        latitude=25.0144456,
-        longitude=121.4610858
-    )
-    
-    line_bot_api.reply_message(event.reply_token, location_message)
+    carousel_template_message = TemplateSendMessage(
+        alt_text='Carousel template',
+        template=CarouselTemplate(
+            columns= msg
+        )
+    )            
 
-def audio_msg(event):
-    audio_message = AudioSendMessage(
-        original_content_url='https://drive.google.com/uc?export=download&id=1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih',
-        duration=240000
-    )
-    line_bot_api.reply_message(event.reply_token, audio_message)
-
-def video_msg(event):
-    video_message = VideoSendMessage(
-        original_content_url='https://drive.google.com/uc?export=download&id=11OZi2D2fafF3cLVojMVdYUT-Ug2fYPLx',
-        preview_image_url='https://drive.google.com/uc?export=download&id=1wsz3U2Aqk4oR83UsvA-EH9J5ffcShsvA'
-    )
-
-    line_bot_api.reply_message(event.reply_token, video_message)    
-
-def stick_msg(event):
-    sticker_message = StickerSendMessage(
-        package_id='1',
-        sticker_id='1'
-    )
-    line_bot_api.reply_message(event.reply_token, sticker_message)    
+    try:
+        line_bot_api.push_message(to, carousel_template_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -248,16 +370,13 @@ def handle_message(event):
     print("event.message.text:", event.message.text)
     #msg = msg.encode('utf-8')
 
-    if "表特" in event.message.text or "beauty" in event.message.text:
-        content = ptt_beauty()
-        msg = gen_Carousel_template_msg(content)
-        line_bot_api.reply_message(
-            event.reply_token,
-            TemplateSendMessage(alt_text='ptt 表特',
-            template=CarouselTemplate(
-                columns= msg
-            )))
     
+    if event.message.text == "PTT 表特版 近期大於 10 推的文章":
+        content = ptt_beauty()
+        send_Carousel_template_msg(content)
+        #line_bot_api.reply_message(
+        #    event.reply_token,
+        #    TextSendMessage(text=content))
         return 0
     elif event.message.text == "油價":
         content = oil_price()
@@ -265,40 +384,8 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=content))
         return 0
-    elif "股價" in event.message.text:
-        stockID = event.message.text.split("股價")
-        print('stockID :'+stockID[0])
-        content = get_stock_price(stockID[0])
-        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
-        print('content :')
-        print(content)
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=content))
-    elif "教學" in event.message.text or "help" in event.message.text:
-        content = '{}\n{}\n{}\n'.format('表特 指令: 表特/beauty','油價 指令: 油價', '股價 指令:  2330股價')
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=content))
-    elif "demo" in event.message.text.lower():
-        demo = Demo()
-        input = event.message.text.lower().split("demo")
-        command = input[1]
-        print('command :', command)
-        if "address" in command:
-            location_msg(event)
-        elif "audio" in command:
-            audio_msg(event)
-        elif "stick" in command:
-            stick_msg(event)
-        elif "video" in command:
-            #video_msg(event)
-            demo.video_msg()
-        elif "image" in command:
-            img_msg(event)                      
-    else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
-        return 0    
+
+    #line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=80,debug=True)
