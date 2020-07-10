@@ -20,7 +20,7 @@ class Demo(object):
         )
 
         try:
-            self.line_bot_api.push_message(self.to, video_message)
+            self.line_bot_api.reply_message(self.event.reply_token, video_message)
         except LineBotApiError as e:
             # error handle
             raise e
