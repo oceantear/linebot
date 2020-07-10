@@ -17,8 +17,8 @@ from linebot.models import (
     CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage, LocationSendMessage, StickerSendMessage,
     AudioSendMessage, VideoSendMessage)
 
-#from demo.demo_fun import Demo
 from demo.demo_fun import Demo
+
 
 app=Flask(__name__)
 #Channel access token

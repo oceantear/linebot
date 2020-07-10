@@ -5,7 +5,7 @@ from linebot.models import (
     CarouselTemplate, CarouselColumn, LocationSendMessage, AudioSendMessage, StickerSendMessage, VideoSendMessage)
 from linebot.exceptions import LineBotApiError
 
-class Video_demo(object):
+class Demo(object):
 
     def __init__(self, event):
         self.CHANNEL_ACCESS_TOKEN = "xwYcIrRNGmj7SKJGpl2DSe+GdJ6JEFQXdoBTaVGLkNGPVdTrSTBKeDDxH3CJzK2eTfgIHHq60evtHvhWF1ldXa2h5SKXyMQKEiSVnpDQuxhzC9lwPTqYaSV88lMmGqxolbQrKgOTBMqLO2yjfM71cQdB04t89/1O/w1cDnyilFU="
