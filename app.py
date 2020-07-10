@@ -231,9 +231,13 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=content))
-
+    elif "教學" in event.message.text or "help" in event.message.text:
+        content = '{}\n{}\n{}\n'.format('表特 指令: 表特/beauty','油價 指令: 油價', '股價 : 指令 股價2330')
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=content))
     else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=event.message.text))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
         return 0    
 
 if __name__ == '__main__':
