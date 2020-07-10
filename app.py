@@ -160,7 +160,7 @@ def ptt_beauty():
 
     print("final meta : ")
     print(info) 
-    send_Carousel_template_msg(info)               
+    return info               
 
 def image_url(link):
         # 不抓相簿 和 .gif
@@ -176,7 +176,7 @@ def image_url(link):
             return ['{}.jpg'.format(link)]
         return None                 
 
-def send_Carousel_template_msg(info):
+def gen_Carousel_template_msg(info):
 
     msg = list()
     for data in info:
@@ -195,19 +195,8 @@ def send_Carousel_template_msg(info):
                             )
                         ]
                     ))
+    return msg                   
 
-    carousel_template_message = TemplateSendMessage(
-        alt_text='Carousel template',
-        template=CarouselTemplate(
-            columns= msg
-        )
-    )            
-
-    try:
-        line_bot_api.push_message(to, carousel_template_message)
-    except LineBotApiError as e:
-        # error handle
-        raise e    
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -217,7 +206,10 @@ def handle_message(event):
 
     if "表特" in event.message.text or "beauty" in event.message.text:
         content = ptt_beauty()
-        send_Carousel_template_msg(content)
+        msg = gen_Carousel_template_msg(content)
+        line_bot_api.reply_message(
+            event.reply_token,
+            CarouselColumn(text=msg))
         return 0
     elif event.message.text == "油價":
         content = oil_price()
