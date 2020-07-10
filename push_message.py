@@ -24,7 +24,6 @@ def text_msg():
     #print(res.content)
     print(res.encoding)
     soup = BeautifulSoup(res.text, 'html.parser')
-    print(soup.title.encode('utf-8'))
     #soup.encoding = 'utf-8'
     title = soup.select('#main')[0].text.replace('\n', '').split('(')[0]
     gas_price = soup.select('#gas-price')[0].text.replace('\n\n\n', '').replace(' ', '')
@@ -94,12 +93,8 @@ def template_msg():
 
 
 def Carousel_template_msg():
-
-    carousel_template_message = TemplateSendMessage(
-        alt_text='Carousel template',
-        template=CarouselTemplate(
-            columns=[
-                CarouselColumn(
+    CarouselColumns = list()
+    CarouselColumns.append(CarouselColumn(
                     thumbnail_image_url='https://example.com/item1.jpg',
                     title='this is menu1',
                     text='description1',
@@ -117,8 +112,9 @@ def Carousel_template_msg():
                             uri='http://example.com/1'
                         )
                     ]
-                ),
-                CarouselColumn(
+                ))
+
+    CarouselColumns.append(CarouselColumn(
                     thumbnail_image_url='https://example.com/item2.jpg',
                     title='this is menu2',
                     text='description2',
@@ -137,10 +133,15 @@ def Carousel_template_msg():
                             uri='http://example.com/2'
                         )
                     ]
-                )
-            ]
+                ))
+
+
+    carousel_template_message = TemplateSendMessage(
+        alt_text='Carousel template',
+        template=CarouselTemplate(
+            columns= CarouselColumns
         )
-    )
+    )            
 
     try:
         line_bot_api.push_message(to, carousel_template_message)
@@ -150,4 +151,4 @@ def Carousel_template_msg():
 
 
 if __name__ == '__main__':
-    text_msg()
+    Carousel_template_msg()

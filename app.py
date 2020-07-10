@@ -13,8 +13,8 @@ from linebot.exceptions import (
 )
 
 from linebot.models import (
-    MessageEvent, TextMessage, TextSendMessage,
-)
+    TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
+    CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage)
 
 app=Flask(__name__)
 #Channel access token
@@ -103,38 +103,111 @@ def get_stock_price(id):
 
 
 def ptt_beauty():
+    print("ptt_beauty")
     rs = requests.session()
-    res = rs.get('https://www.ptt.cc/bbs/Beauty/index.html', verify=False)
+    res = rs.get('https://www.ptt.cc/bbs/Beauty/index.html', verify=False, cookies={'over18':'1'})
+    
     soup = BeautifulSoup(res.text, 'html.parser')
-    all_page_url = soup.select('.btn.wide')[1]['href']
-    start_page = get_page_number(all_page_url)
-    page_term = 2  # crawler count
-    push_rate = 10  # 推文
-    index_list = []
-    article_list = []
-    for page in range(start_page, start_page - page_term, -1):
-        page_url = 'https://www.ptt.cc/bbs/Beauty/index{}.html'.format(page)
-        index_list.append(page_url)
+    all_page_url = soup.select("div.r-ent")
+    info = list()
+    meta = dict()
+    
+    for entry in all_page_url:
+        #print("推:")
+        #print(entry.find('a').text)
+        if entry.find('a') is not None:
+            if("公告" not in entry.find('a').text):
+                meta = { 'title': entry.find('a').text,
+                        'link': entry.find('a').attrs['href'],
+                        'author':entry.find('div', 'meta').find('div','author').text,
+                        'push':entry.find('div','nrec').text,
+                        'Imgurl':""
+                        
+                }
+        
+        if meta is not None:
+            
+            rate = meta.get("push")
 
-    # 抓取 文章標題 網址 推文數
-    while index_list:
-        index = index_list.pop(0)
-        res = rs.get(index, verify=False)
-        # 如網頁忙線中,則先將網頁加入 index_list 並休息1秒後再連接
-        if res.status_code != 200:
-            index_list.append(index)
-            # print u'error_URL:',index
-            # time.sleep(1)
-        else:
-            article_list = craw_page(res, push_rate)
-            # print u'OK_URL:', index
-            # time.sleep(0.05)
-    content = ''
-    for article in article_list:
-        data = '[{} push] {}\n{}\n\n'.format(article.get('rate', None), article.get('title', None),
-                                             article.get('url', None))
-        content += data
-    return content
+            if rate :
+                rate = 100 if rate.startswith('爆') else rate
+                rate = -1 * int(rate[1]) if rate.startswith('X') else rate
+            else:
+                rate = 0    
+
+            if int(rate) >= 20:
+                print('rate > 20')
+                print('https://www.ptt.cc/'+ meta.get('link'))
+                
+                title = meta.get("title")
+                print('title : '+ meta.get('title'))
+                res = rs.get('https://www.ptt.cc/'+ meta.get('link'), verify=False, cookies={'over18':'1'})
+                #print("sub")
+                #print(res.text)
+                soup = BeautifulSoup(res.text, 'html.parser')
+                #des = soup.find('meta', attrs={'name': 'description'})
+                try:
+                    for img in soup.find_all("a", rel='nofollow'):
+                        img_url = image_url(img['href'])
+                        if img_url is not None:
+                            meta['Imgurl'] = img_url
+                            info.append(meta)
+                            print("img_url : ")
+                            print(img_url)
+                            break
+                except Exception as e:
+                    print("自行刪除標題列", e)
+
+    print("final meta : ")
+    print(info) 
+    send_Carousel_template_msg(info)               
+
+def image_url(link):
+        # 不抓相簿 和 .gif
+        if ('imgur.com/a/' in link) or ('imgur.com/gallery/' in link) or ('.gif' in link):
+            return []
+        # 符合圖片格式的網址
+        images_format = ['.jpg', '.png', '.jpeg']
+        for image in images_format:
+            if link.endswith(image):
+                return link
+        # 有些網址會沒有檔案格式， "https://imgur.com/xxx"
+        if 'imgur' in link:
+            return ['{}.jpg'.format(link)]
+        return None                 
+
+def send_Carousel_template_msg(info):
+
+    msg = list()
+    for data in info:
+        print("title :", data.get('title'))
+        print("link :", "https://www.ptt.cc" + data.get('link'))
+        print("Imgurl :", data.get('Imgurl'))
+        url = "http://www.ptt.cc" + data.get('link')
+        msg.append(CarouselColumn(
+                        thumbnail_image_url= data.get('Imgurl'),
+                        title=data.get('title'),
+                        text=data.get('author'),
+                        actions=[
+                            URIAction(
+                                label='點擊看正妹',
+                                uri=url
+                            )
+                        ]
+                    ))
+
+    carousel_template_message = TemplateSendMessage(
+        alt_text='Carousel template',
+        template=CarouselTemplate(
+            columns= msg
+        )
+    )            
+
+    try:
+        line_bot_api.push_message(to, carousel_template_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e    
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -142,11 +215,9 @@ def handle_message(event):
     print("event.message.text:", event.message.text)
     #msg = msg.encode('utf-8')
 
-    if event.message.text == "PTT 表特版 近期大於 10 推的文章":
+    if "表特" in event.message.text or "beauty" in event.message.text:
         content = ptt_beauty()
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=content))
+        send_Carousel_template_msg(content)
         return 0
     elif event.message.text == "油價":
         content = oil_price()
