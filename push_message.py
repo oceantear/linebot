@@ -2,7 +2,7 @@ from linebot import LineBotApi
 
 from linebot.models import (
     TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
-    CarouselTemplate, CarouselColumn, LocationSendMessage, AudioSendMessage, StickerSendMessage)
+    CarouselTemplate, CarouselColumn, LocationSendMessage, AudioSendMessage, StickerSendMessage, VideoSendMessage)
 from linebot.exceptions import LineBotApiError
 
 import requests
@@ -165,7 +165,7 @@ def location_msg():
 def audio_msg():
     
     audio_message = AudioSendMessage(
-        original_content_url='https://drive.google.com/file/d/1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih/view?usp=sharing',
+        original_content_url='https://drive.google.com/uc?export=download&id=1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih',
         duration=204000
     )
     try:
@@ -187,5 +187,17 @@ def stick_msg():
         # error handle
         raise e
 
+def video_msg():
+    video_message = VideoSendMessage(
+        original_content_url='https://drive.google.com/uc?export=download&id=11OZi2D2fafF3cLVojMVdYUT-Ug2fYPLx',
+        preview_image_url='https://drive.google.com/uc?export=download&id=1wsz3U2Aqk4oR83UsvA-EH9J5ffcShsvA'
+    )
+
+    try:
+        line_bot_api.push_message(to, video_message)
+    except LineBotApiError as e:
+        # error handle
+        raise e     
+
 if __name__ == '__main__':
-    stick_msg()
+    video_msg()

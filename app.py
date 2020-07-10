@@ -15,7 +15,7 @@ from linebot.exceptions import (
 from linebot.models import (
     TextSendMessage, ImageSendMessage, TemplateSendMessage, ButtonsTemplate, PostbackAction, MessageAction, URIAction,
     CarouselTemplate, CarouselColumn, MessageEvent, TextMessage, TextSendMessage, LocationSendMessage, StickerSendMessage,
-    AudioSendMessage)
+    AudioSendMessage, VideoSendMessage)
 
 app=Flask(__name__)
 #Channel access token
@@ -196,7 +196,16 @@ def gen_Carousel_template_msg(info):
                             )
                         ]
                     ))
-    return msg                   
+    return msg
+
+def img_msg(event):
+    image_url = "https://i.guim.co.uk/img/media/22bed68981e92d7a9ff204ed7d7f5776a16468fe/1933_1513_3623_2173/master/3623.jpg?width=605&quality=45&auto=format&fit=max&dpr=2&s=da5b088be9a2aa1527f7509ce6a70c68"    
+    img_message = ImageSendMessage(
+        original_content_url=image_url, 
+        preview_image_url=image_url)
+
+    line_bot_api.reply_message(event.reply_token, img_message)    
+                       
 
 def location_msg(event):
     location_message = LocationSendMessage(
@@ -210,17 +219,25 @@ def location_msg(event):
 
 def audio_msg(event):
     audio_message = AudioSendMessage(
-        original_content_url='https://example.com/original.m4a',
+        original_content_url='https://drive.google.com/uc?export=download&id=1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih',
         duration=240000
     )
     line_bot_api.reply_message(event.reply_token, audio_message)
+
+def video_msg(event):
+    video_message = VideoSendMessage(
+        original_content_url='https://drive.google.com/uc?export=download&id=11OZi2D2fafF3cLVojMVdYUT-Ug2fYPLx',
+        preview_image_url='https://drive.google.com/uc?export=download&id=1wsz3U2Aqk4oR83UsvA-EH9J5ffcShsvA'
+    )
+
+    line_bot_api.reply_message(event.reply_token, video_message)    
 
 def stick_msg(event):
     sticker_message = StickerSendMessage(
         package_id='1',
         sticker_id='1'
     )
-    line_bot_api.reply_message(event.reply_token, sticker_message)
+    line_bot_api.reply_message(event.reply_token, sticker_message)    
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -269,7 +286,11 @@ def handle_message(event):
         elif "audio" in command:
             audio_msg(event)
         elif "stick" in command:
-            stick_msg(event)              
+            stick_msg(event)
+        elif "video" in command:
+            video_msg(event)
+        elif "image" in command:
+            img_msg(event)                      
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text="我還沒學會這項功能，敬請期待~"))
         return 0    
