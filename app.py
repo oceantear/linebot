@@ -209,7 +209,11 @@ def handle_message(event):
         msg = gen_Carousel_template_msg(content)
         line_bot_api.reply_message(
             event.reply_token,
-            CarouselColumn(text=msg))
+            TemplateSendMessage(alt_text='Carousel template',
+            template=CarouselTemplate(
+                columns= msg
+            )))
+    
         return 0
     elif event.message.text == "油價":
         content = oil_price()
