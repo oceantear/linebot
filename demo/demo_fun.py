@@ -34,7 +34,7 @@ class Video_demo(object):
         self.line_bot_api.reply_message(self.event.reply_token, img_message)    
                        
 
-    def location_msg(event):
+    def location_msg(self):
         location_message = LocationSendMessage(
             title='我的位置',
             address='資拓宏宇',
@@ -42,26 +42,26 @@ class Video_demo(object):
             longitude=121.4610858
         )
         
-        self.line_bot_api.reply_message(event.reply_token, location_message)
+        self.line_bot_api.reply_message(self.event.reply_token, location_message)
 
-    def audio_msg(event):
+    def audio_msg(self):
         audio_message = AudioSendMessage(
             original_content_url='https://drive.google.com/uc?export=download&id=1c3O7Ab44noGO0bXGTGzDJlR1W70Czvih',
             duration=240000
         )
-        line_bot_api.reply_message(event.reply_token, audio_message)
+        self.line_bot_api.reply_message(self.event.reply_token, audio_message)
 
-    def video_msg(event):
+    def video_msg(self):
         video_message = VideoSendMessage(
             original_content_url='https://drive.google.com/uc?export=download&id=11OZi2D2fafF3cLVojMVdYUT-Ug2fYPLx',
             preview_image_url='https://drive.google.com/uc?export=download&id=1wsz3U2Aqk4oR83UsvA-EH9J5ffcShsvA'
         )
 
-        line_bot_api.reply_message(event.reply_token, video_message)    
+        self.line_bot_api.reply_message(self.event.reply_token, video_message)    
 
-    def stick_msg(event):
+    def stick_msg(self):
         sticker_message = StickerSendMessage(
             package_id='1',
             sticker_id='1'
         )
-        line_bot_api.reply_message(event.reply_token, sticker_message)         
+        self.line_bot_api.reply_message(self.event.reply_token, sticker_message)         
