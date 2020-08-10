@@ -18,6 +18,8 @@ from linebot.models import (
     AudioSendMessage, VideoSendMessage)
 
 from demo.demo_fun import Demo
+#google doc
+import gspread
 
 
 app=Flask(__name__)
@@ -179,7 +181,44 @@ def image_url(link):
         # 有些網址會沒有檔案格式， "https://imgur.com/xxx"
         if 'imgur' in link:
             return ['{}.jpg'.format(link)]
-        return None                 
+        return None
+
+# google doc
+def auth_gss_client(path, scopes):
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(path, scopes)
+    return gspread.authorize(credentials)
+
+def get_restaurant_list():
+    #從剛剛建立的sheet，把網址中 https://docs.google.com/spreadsheets/d/〔key〕/edit 的 〔key〕的值代入 
+    spreadsheet_key_path = '1dcVq9JvBY_qloGWpPzuWu16QvxiGrKrkWEmI5oJ24KQ'
+
+    #我們透過open_by_key這個method來開啟sheet
+    sheet = gss_client.open_by_key(spreadsheet_key_path).sheet1
+    #單純取出時間稍後塞入sheet
+    #today = time.strftime("%c")
+    #透過insert_row寫入值 第二行塞入時間,abc,123的值
+    #sheet.insert_row([today,"abc", 123], 2)
+
+    print("record:")
+    lunch_data = list()
+    list_of_lists = sheet.get_all_values()
+    for data in list_of_lists:
+        print(data)
+        print(data[0])
+        item = dict()
+        item['title']=data[0]
+        item['address']=data[1]
+        item['img_url']=data[2]
+        item['url']=data[3]
+        lunch_data.append(item)
+
+    print("lunch_data :")
+    print(lunch_data)    
+
+    msg = gen_restaurant_Carousel_template_msg(lunch_data)
+
+    return msg
+
 
 def gen_Carousel_template_msg(info):
 
@@ -201,6 +240,27 @@ def gen_Carousel_template_msg(info):
                         ]
                     ))
     return msg
+
+def gen_restaurant_Carousel_template_msg(info):
+
+    msg = list()
+    for data in info:
+        print("title :", data.get('title'))
+        #print("link :", "https://www.ptt.cc" + data.get('addr'))
+        print("Imgurl :", data.get('img_url'))
+        url = data.get('url')
+        msg.append(CarouselColumn(
+                        thumbnail_image_url= data.get('img_url'),
+                        title=data.get('title'),
+                        text=data.get('title'),
+                        actions=[
+                            URIAction(
+                                label='點擊看食記',
+                                uri=url
+                            )
+                        ]
+                    ))
+    return msg    
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -235,6 +295,15 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=content))
+    elif "吃什麼" in event.message.text:
+
+        msg = get_restaurant_list()
+        line_bot_api.reply_message(
+            event.reply_token,
+            TemplateSendMessage(
+            alt_text='午餐吃什麼',
+            template=CarouselTemplate(
+            columns= msg)))
     elif "教學" in event.message.text or "help" in event.message.text:
         content = '{}\n{}\n{}\n'.format('表特 指令: 表特/beauty','油價 指令: 油價', '股價 指令:  2330股價')
         line_bot_api.reply_message(
