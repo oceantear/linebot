@@ -20,6 +20,7 @@ from linebot.models import (
 from demo.demo_fun import Demo
 #google doc
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials 
 
 
 app=Flask(__name__)
@@ -27,6 +28,11 @@ app=Flask(__name__)
 line_bot_api = LineBotApi('xwYcIrRNGmj7SKJGpl2DSe+GdJ6JEFQXdoBTaVGLkNGPVdTrSTBKeDDxH3CJzK2eTfgIHHq60evtHvhWF1ldXa2h5SKXyMQKEiSVnpDQuxhzC9lwPTqYaSV88lMmGqxolbQrKgOTBMqLO2yjfM71cQdB04t89/1O/w1cDnyilFU=')
 #channel secret
 handler = WebhookHandler('c07bdeb9cdabc6c14307c208d5dd7ba0')
+
+#google doc
+auth_json_path = 'auth.json' #由剛剛建立出的憑證，放置相同目錄以供引入
+gss_scopes = ['https://spreadsheets.google.com/feeds'] #我們想要取用的範圍
+gss_client = auth_gss_client(auth_json_path, gss_scopes) #呼叫我們的函式
 
 @app.route('/')
 def hello():
