@@ -89,7 +89,7 @@ def stock_price():
 
     try:
         content = get_stock_price(stockID)
-        content = '{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'])
+        content = '{}\n{}\n{}\n{}\n'.format('股票代號 : ' + content['股票代號'],'公司簡稱 : ' + content['公司簡稱'], '當盤成交價 : ' + content['當盤成交價'], '買價 : ' + content['買價'])
         print('content :')
         print(content)
         line_bot_api.push_message(to, TextSendMessage(text=content))
@@ -144,6 +144,7 @@ def get_stock_price(id):
     print(data)
     print(data['ch'])
     meta = { '股票代號': data['ch'],
+                '買價':data['b'],
                 '公司簡稱':data['n'],
                 '當盤成交價':data['z'],
                 '當盤成交量':data['tv'],
