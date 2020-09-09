@@ -91,7 +91,7 @@ def oil_price():
 '''    
 
 def get_stock_price(id):
-    target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw'
+    target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw&json=1&delay=0'
 
     rs = requests.session()
     res = rs.get(target_url, verify=False)

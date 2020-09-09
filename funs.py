@@ -81,10 +81,11 @@ def stock_price():
     print(stockID)
     #print(data)
     #print(data.get('stockID', ''))
-    text = "1102股價"
+    text = "2330股價"
     id = text.split("股價")
     print("id:")
     print(id[0])
+    stockID = id[0]
 
     try:
         content = get_stock_price(stockID)
@@ -130,16 +131,19 @@ def get_oil_price():
 
 def get_stock_price(id):
     #https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_1102.tw
-    target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw'
-
+    #target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw'
+    print('id :',id)
+    target_url = 'https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=tse_'+ id + '.tw&json=1&delay=0'
     rs = requests.session()
     res = rs.get(target_url, verify=False)
-    msgArray = json.loads(res.text)
-    data = msgArray['msgArray'][0]
+    content = json.loads(res.text)
+    print('content :')
+    print(content)
+    data = content['msgArray'][0]
     print('data :')
     print(data)
-    print(data['c'])
-    meta = { '股票代號': data['c'],
+    print(data['ch'])
+    meta = { '股票代號': data['ch'],
                 '公司簡稱':data['n'],
                 '當盤成交價':data['z'],
                 '當盤成交量':data['tv'],
